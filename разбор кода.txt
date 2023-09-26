@@ -1,0 +1,66 @@
+public class SecurityConfig
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    httpSecurity.authorizeHttpRequests((request) -> request.requestMatchers("/registration").permitAll()
+            .anyRequest().authenticated())
+            .formLogin((form) -> form.loginPage("/login").permitAll()).logout(LogoutConfigurer::permitAll);
+    return httpSecurity.build();
+
+Этот код настраивает правила авторизации и аутентификации в Spring Security:
+
+authorizeHttpRequests - настройка авторизации запросов
+requestMatchers("/registration").permitAll() - разрешает доступ к /registration всем пользователям без аутентификации
+anyRequest().authenticated() - все остальные запросы требуют аутентификации
+formLogin - настройка формы логина
+loginPage("/login") - указывает URL страницы логина
+permitAll() - разрешает доступ к странице логина всем
+logout - настройка логаута
+permitAll() - разрешает доступ к логауту всем пользователям
+То есть в целом здесь настроено:
+
+Страница /registration доступна всем
+Все остальные страницы требуют аутентификации
+Страница логина /login доступна всем
+Логаут разрешен всем пользователям
+Это базовая настройка авторизации и аутентификации с помощью Spring Security.
+
+Эти классы отвечают за работу с пользователями в Spring Security.
+
+UserDetailsServiceImpl реализует интерфейс UserDetailsService, который используется в Spring Security для загрузки данных о пользователях.
+
+Основная логика в методе loadUserByUsername:
+
+По email пользователя находится запись UserEntity в БД через репозиторий
+На основе найденной записи создается объект UserDetailsImpl вызовом статического метода build
+Возвращается объект UserDetailsImpl, который будет использоваться в Spring Security
+UserDetailsImpl реализует интерфейс UserDetails, предоставляя все необходимые данные из UserEntity в виде, нужном для Spring Security:
+
+Идентификатор, имя, почта, пароль
+Права доступа (авторити) на основе роли
+Флаги аккаунта (активен, не заблокирован и т.д.)
+Таким образом происходит интеграция данных о пользователях из БД приложения в механизм аутентификации Spring Security с помощью этих классов.
+
+@Data используется в UserDetailsImpl для автогенерации getter/setter и других методов.
+@AllArgsConstructor автоматически генерирует конструктор с параметрами для инъекции зависимостей.
+
+
+UserDetailsServiceImpl:
+
+@Service - помечает класс как бин Spring, чтобы он создавался автоматически
+@AllArgsConstructor - генерирует конструктор со всеми полями
+UserRepository userRepository - поле для внедрения репозитория пользователей
+loadUserByUsername - реализация метода интерфейса UserDetailsService
+userRepository.findByEmail - загружает пользователя по email из БД
+UserDetailsImpl.build - создает UserDetails на основе UserEntity
+Возврат UserDetailsImpl - передача данных о пользователе в Spring Security
+UserDetailsImpl:
+
+@NoArgsConstructor - конструктор без параметров
+@Data - генерация getter/setter и других методов
+Implements UserDetails - реализация интерфейса для Spring Security
+Поля id, name, email, password - данные пользователя
+authorities - список прав доступа (ролей)
+Методы getAuthorities, getPassword и т.д. - реализация интерфейса
+build - создание объекта из UserEntity
+Возврат UserDetailsImpl - передача данных о пользователе
+То есть в целом это типичный паттерн для интеграции данных приложения в Spring Security с помощью соответствующих интерфейсов и классов.
